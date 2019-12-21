@@ -4,7 +4,7 @@ import phonebook.models.PhoneNumber;
 import phonebook.models.PhoneType;
 import java.util.ArrayList;
 
-public class DefaultTypeList {
+class DefaultTypeList {
 
     private static DefaultTypeList instance;
     private ArrayList<PhoneType> defaultTypeList;
@@ -21,7 +21,7 @@ public class DefaultTypeList {
         defaultTypeList.add( new PhoneType("Домашний", homeList));
     }
 
-    public static DefaultTypeList getInstance(){
+    static DefaultTypeList getInstance(){
 
         if (instance == null){
             instance = new DefaultTypeList();
@@ -29,7 +29,7 @@ public class DefaultTypeList {
         return instance;
     }
 
-    public ArrayList<PhoneType> getDefaultTypeList() {
+    ArrayList<PhoneType> getDefaultTypeList() {
 
         return defaultTypeList;
     }

@@ -10,7 +10,6 @@ import phonebook.repository.PersonRepository;
 import phonebook.repository.PhoneNumberRepository;
 import phonebook.repository.PhoneTypeRepository;
 import phonebook.repository.ReferenceRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,40 +46,36 @@ public class GeneralUtility {
         PhoneNumber phoneNumber;
         PhoneType phoneType;
 
-        List<Person> persons = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
-        List<PhoneNumber> numbers = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, type);
+        //createType
         List<PhoneType> types = DefaultTypeList.getInstance().getDefaultTypeList();
+        phoneType = getPhoneType(type,types);
 
-        if (persons.isEmpty()){
-            person = new Person(surname, name, family);
-        }
-        else {
-            person = persons.get(0);
-        }
+        //createNumber
+        List<PhoneNumber> numbers = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, type);
         if (numbers.isEmpty()){
             phoneNumber = new PhoneNumber(number);
         }
         else {
             phoneNumber = numbers.get(0);
         }
-        int typeIndex = Integer.parseInt(type);
-        phoneType = types.get(typeIndex);
 
+        //create Person
+        List<Person> persons = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
+        if (persons.isEmpty()){
+            person = new Person(surname, name, family);
+        }
+        else {
+            person = persons.get(0);
+        }
+
+        //create Reference
         reference = refCreator.create(person, phoneNumber, phoneType);
 
+        //add into DB
         if (references == null){
             references = (ArrayList<Reference>) readAllReference();
         }
-
-        boolean isUnique = true;
-        for (Reference element : references){
-            if (reference.equals(element)){
-                isUnique = false;
-                break;
-            }
-        }
-
-        if (isUnique){
+        if (!references.contains(reference)){
             referenceRepo.save(reference);
         }
     }
@@ -132,7 +127,7 @@ public class GeneralUtility {
 //        if (referenceRepo.findById(id).isPresent()){
 //            Reference reference = referenceRepo.findById(id).get();
 //            Person person = reference.getPersReference();
-//            PhoneNumber phoneNumber = reference.getPhoneNumReference();
+//            PhoneNumber phoneNumber = reference.getNumber();
 //            List<Person> persons = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
 //            List<PhoneNumber> numbers = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, type);
 //
@@ -141,7 +136,7 @@ public class GeneralUtility {
 //                person.setRefPerson(reference);
 //            }
 //            if (!numbers.isEmpty()){
-//                reference.setPhoneNumReference(numbers.get(0));
+//                reference.setNumber(numbers.get(0));
 //                phoneNumber.setRefPhoneNumber(reference);
 //            }
 //        }
@@ -152,9 +147,9 @@ public class GeneralUtility {
         if (referenceRepo.findById(id).isPresent()){
             Reference reference = referenceRepo.findById(id).get();
 
-            List<PhoneNumber> numbers = reference.getPhoneNumReference().getPhoneType().getPhoneNumbers();
+            List<PhoneNumber> numbers = reference.getNumber().getPhoneType().getPhoneNumbers();
             if (numbers != null && !numbers.isEmpty()){
-                numbers.remove(reference.getPhoneNumReference());
+                numbers.remove(reference.getNumber());
             }
             referenceRepo.deleteById(id);
         }
@@ -168,8 +163,8 @@ public class GeneralUtility {
 
 
         for (Reference element : referenceList){
-            persons.add(element.getPersReference());
-            numbers.add(element.getPhoneNumReference());
+//            persons.add(element.getPersReference());
+            numbers.add(element.getNumber());
         }
         for (PhoneNumber element : numbers) {
             types.add(element.getPhoneType());
@@ -198,11 +193,26 @@ public class GeneralUtility {
         DefaultPersonList defaultPersons = new DefaultPersonList();
         DefaultNumberList defaultNumbers = new DefaultNumberList();
         DefaultTypeList defaultTypes = DefaultTypeList.getInstance();
-
-        List<Reference> referenceList = refCreator.createDefaultRefList(defaultPersons.getDefaultPersonList(),
-                                                              defaultNumbers.getDefaultNumberList(),
-                                                              defaultTypes.getDefaultTypeList());
+        List<Reference> referenceList = refCreator.createDefaultList(defaultPersons.getDefaultPersonList(),
+                                                                     defaultNumbers.getDefaultNumberList(),
+                                                                     defaultTypes.getDefaultTypeList());
         typeRepo.saveAll(defaultTypes.getDefaultTypeList());
-        referenceRepo.saveAll(referenceList);
+        personRepo.saveAll(defaultPersons.getDefaultPersonList());
+    }
+
+    private PhoneType getPhoneType(String type, List<PhoneType> typeList){
+
+        PhoneType phoneType;
+        int typeIndex = 0;
+
+        try {
+            typeIndex = Integer.parseInt(type);
+        }catch(NumberFormatException nfe) {
+            nfe.printStackTrace();
+        }finally {
+            phoneType = typeList.get(typeIndex);
+        }
+
+        return phoneType;
     }
 }

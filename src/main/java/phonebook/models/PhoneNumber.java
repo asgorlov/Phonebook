@@ -2,6 +2,7 @@ package phonebook.models;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -14,9 +15,8 @@ public class PhoneNumber {
     private Long id;
     @Column
     private String phoneNumber;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn
-    private Reference refPhoneNumber;
+    @OneToMany(mappedBy = "number")
+    private List<Reference> references;
     @ManyToOne
     @JoinColumn
     private PhoneType phoneType;
@@ -27,12 +27,6 @@ public class PhoneNumber {
     public PhoneNumber(String phoneNumber) {
 
         this.phoneNumber = phoneNumber;
-    }
-
-    public PhoneNumber(String phoneNumber, PhoneType phoneType) {
-
-        this.phoneNumber = phoneNumber;
-        this.phoneType = phoneType;
     }
 
     public Long getId() {
@@ -55,14 +49,14 @@ public class PhoneNumber {
         this.phoneNumber = phoneNumber;
     }
 
-    public Reference getRefPhoneNumber() {
+    public List<Reference> getReferences() {
 
-        return refPhoneNumber;
+        return references;
     }
 
-    public void setRefPhoneNumber(Reference refPhoneNumber) {
+    public void setReferences(List<Reference> references) {
 
-        this.refPhoneNumber = refPhoneNumber;
+        this.references = references;
     }
 
     public PhoneType getPhoneType() {
@@ -87,15 +81,13 @@ public class PhoneNumber {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PhoneNumber that = (PhoneNumber) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(phoneNumber, that.phoneNumber) &&
-                Objects.equals(refPhoneNumber, that.refPhoneNumber) &&
+        return  Objects.equals(phoneNumber, that.phoneNumber) &&
                 Objects.equals(phoneType, that.phoneType);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(id, phoneNumber, refPhoneNumber, phoneType);
+        return Objects.hash(phoneNumber, phoneType);
     }
 }

@@ -16,7 +16,7 @@ public class PhoneType {
     private Long id;
     @Column
     private String type;
-    @OneToMany(mappedBy = "phoneType")
+    @OneToMany(mappedBy = "phoneType", cascade = CascadeType.ALL)
     private List<PhoneNumber> phoneNumbers;
 
     public PhoneType() {

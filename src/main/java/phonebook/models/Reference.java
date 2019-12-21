@@ -1,7 +1,6 @@
 package phonebook.models;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -13,20 +12,20 @@ public class Reference {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private Long id;
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn
-    private Person persReference;
-    @OneToOne(cascade = CascadeType.ALL)
+    private Person person;
+    @ManyToOne
     @JoinColumn
-    private PhoneNumber phoneNumReference;
+    private PhoneNumber number;
 
     public Reference() {
     }
 
-    public Reference(Person persReference, PhoneNumber phoneNumReference) {
+    public Reference(Person person, PhoneNumber number) {
 
-        this.persReference = persReference;
-        this.phoneNumReference = phoneNumReference;
+        this.person = person;
+        this.number = number;
     }
 
     public Long getId() {
@@ -39,30 +38,30 @@ public class Reference {
         this.id = id;
     }
 
-    public Person getPersReference() {
+    public Person getPerson() {
 
-        return persReference;
+        return person;
     }
 
-    public void setPersReference(Person persReference) {
+    public void setPerson(Person person) {
 
-        this.persReference = persReference;
+        this.person = person;
     }
 
-    public PhoneNumber getPhoneNumReference() {
+    public PhoneNumber getNumber() {
 
-        return phoneNumReference;
+        return number;
     }
 
-    public void setPhoneNumReference(PhoneNumber phoneNumReference) {
+    public void setNumber(PhoneNumber number) {
 
-        this.phoneNumReference = phoneNumReference;
+        this.number = number;
     }
 
     @Override
     public String toString() {
 
-        return persReference.toString() + " " + phoneNumReference.toString();
+        return person.toString() + " " + number.toString();
     }
 
     @Override
@@ -71,14 +70,13 @@ public class Reference {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Reference reference = (Reference) o;
-        return Objects.equals(persReference, reference.persReference) &&
-                Objects.equals(phoneNumReference.toString(),
-                        reference.phoneNumReference.toString());
+        return Objects.equals(person, reference.person) &&
+                Objects.equals(number, reference.number);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(persReference, phoneNumReference);
+        return Objects.hash(person, number);
     }
 }

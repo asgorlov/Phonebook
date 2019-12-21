@@ -1,6 +1,3 @@
-Сделать в person аннотацию один ко многим для reference
-Сделать в phoneNumber аннотацию один ко многим для reference
-Сделать в reference аннотацию многие к одному для person и phoneNumber
 Поменять методы add, delete
 
 Поменять метод search через rest-сервис для поиска + postman

@@ -4,37 +4,51 @@ import phonebook.models.Person;
 import phonebook.models.PhoneNumber;
 import phonebook.models.PhoneType;
 import phonebook.models.Reference;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReferenceCreator {
+class ReferenceCreator {
 
-    public Reference create(Person person, PhoneNumber number, PhoneType type){
+    Reference create(Person person, PhoneNumber number, PhoneType type){
 
-        Reference reference = new Reference();
+        //link Reference with Number & Person
+        Reference reference = new Reference(person,number);
 
-        if (type == null) {
-            DefaultTypeList defaultTypeList = DefaultTypeList.getInstance();
-            type = defaultTypeList.getDefaultTypeList().get(1);
+        //link Type with Number
+        List<PhoneNumber> numbersOfType = type.getPhoneNumbers();
+        if (numbersOfType == null){
+            numbersOfType = new ArrayList<>();
+        }
+        if (!numbersOfType.contains(number)){
+            numbersOfType.add(number);
+            type.setPhoneNumbers(numbersOfType);
         }
 
-        reference.setPersReference(person);
-        person.setRefPerson(reference);
-        reference.setPhoneNumReference(number);
-        number.setRefPhoneNumber(reference);
+        //link Number with Type
         number.setPhoneType(type);
 
-        if (isUniqueNumber(number, type)){
-            type.getPhoneNumbers().add(number);
+        //link Number & Person with Reference
+        List<Reference> referencesOfNumber = number.getReferences();
+        List<Reference> referencesOfPerson = person.getReferences();
+        if (referencesOfNumber == null){
+            referencesOfNumber = new ArrayList<>();
+        }
+        if (referencesOfPerson == null){
+            referencesOfPerson = new ArrayList<>();
+        }
+        if (!referencesOfPerson.contains(reference)){
+            referencesOfNumber.add(reference);
+            referencesOfPerson.add(reference);
+            number.setReferences(referencesOfNumber);
+            person.setReferences(referencesOfPerson);
         }
 
         return reference;
     }
 
-    public List<Reference> createDefaultRefList(List<Person> persons,
-                                                List<PhoneNumber> numbers,
-                                                List<PhoneType> types){
+    List<Reference> createDefaultList(List<Person> persons,
+                                      List<PhoneNumber> numbers,
+                                      List<PhoneType> types){
 
         List<Reference> references = new ArrayList<>();
 
@@ -42,20 +56,11 @@ public class ReferenceCreator {
             Person personIter = persons.get(i);
             PhoneNumber numberIter = numbers.get(i);
             PhoneType typeIter = types.get((int)(Math.random() * 3));
+
             Reference referenceIter = create(personIter, numberIter, typeIter);
 
             references.add(referenceIter);
         }
         return references;
-    }
-
-    private boolean isUniqueNumber(PhoneNumber number, PhoneType type){
-
-        for (PhoneNumber element : type.getPhoneNumbers()){
-            if (element.getPhoneNumber().equals(number.getPhoneNumber())){
-                return false;
-            }
-        }
-        return true;
     }
 }

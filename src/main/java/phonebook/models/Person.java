@@ -2,6 +2,7 @@ package phonebook.models;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -18,9 +19,8 @@ public class Person {
     private String name;
     @Column
     private String family;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn
-    private Reference refPerson;
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
+    private List<Reference> references;
 
     public Person() {
     }
@@ -72,14 +72,14 @@ public class Person {
         this.family = family;
     }
 
-    public Reference getRefPerson() {
+    public List<Reference> getReferences() {
 
-        return refPerson;
+        return references;
     }
 
-    public void setRefPerson(Reference reference) {
+    public void setReferences(List<Reference> references) {
 
-        this.refPerson = reference;
+        this.references = references;
     }
 
     @Override
