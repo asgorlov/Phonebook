@@ -71,7 +71,8 @@ public class Reference {
         if (o == null || getClass() != o.getClass()) return false;
         Reference reference = (Reference) o;
         return Objects.equals(person, reference.person) &&
-                Objects.equals(number, reference.number);
+                Objects.equals(number, reference.number) &&
+                Objects.equals(number.getPhoneType(), reference.getNumber().getPhoneType());
     }
 
     @Override
