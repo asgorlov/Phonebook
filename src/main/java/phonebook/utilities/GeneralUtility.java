@@ -49,31 +49,38 @@ public class GeneralUtility {
         List<PhoneType> types = DefaultTypeList.getInstance().getDefaultTypeList();
         phoneType = getPhoneType(type,types);
 
-        //createNumber
-        List<PhoneNumber> numbers = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, type);
-        if (numbers.isEmpty()){
-            phoneNumber = new PhoneNumber(number);
-        }
-        else {
-            phoneNumber = numbers.get(0);
-        }
+        //check unique Reference
+        List<Reference> references = referenceRepo
+                .findByPerson_SurnameAndPerson_NameAndPerson_FamilyAndNumber_PhoneNumberAndNumber_PhoneType
+                        (surname,name,family,number,phoneType);
+        if (references.isEmpty()){
 
-        //create Person
-        List<Person> persons = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
-        if (persons.isEmpty()){
-            person = new Person(surname, name, family);
-        }
-        else {
-            person = persons.get(0);
-        }
+            //createNumber
+            List<PhoneNumber> numbers = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, phoneType.getType());
+            if (numbers.isEmpty()){
+                phoneNumber = new PhoneNumber(number);
+            }
+            else {
+                phoneNumber = numbers.get(0);
+            }
 
-        //create Reference
-        reference = refCreator.create(person, phoneNumber, phoneType);
+            //create Person
+            List<Person> persons = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
+            if (persons.isEmpty()){
+                person = new Person(surname, name, family);
+            }
+            else {
+                person = persons.get(0);
+            }
 
-        //add into DB
-        numberRepo.save(phoneNumber);
-        personRepo.save(person);
-        referenceRepo.save(reference);
+            //create Reference
+            reference = refCreator.create(person, phoneNumber, phoneType);
+
+            //add data into DB
+            numberRepo.save(phoneNumber);
+            personRepo.save(person);
+            referenceRepo.save(reference);
+        }
     }
 
     public void search(String surname, String name, String number, Map<String,Object> model){
@@ -141,6 +148,7 @@ public class GeneralUtility {
     public void delete(Long id){
 
         if (referenceRepo.findById(id).isPresent()){
+            //find Reference
             Reference reference = referenceRepo.findById(id).get();
             Person person = reference.getPerson();
             PhoneNumber number = reference.getNumber();
@@ -162,9 +170,9 @@ public class GeneralUtility {
 
     public void readAll(Map<String,Object> model){
 
-        ArrayList<Reference> references = (ArrayList<Reference>) readAllReference();
+        List<Reference> refList = (List<Reference>) referenceRepo.findAll();;
 
-        read(references, model);
+        read(refList, model);
     }
 
     private void read(Iterable<Reference> referenceList, Map<String,Object> model){
@@ -186,11 +194,6 @@ public class GeneralUtility {
         model.put("numbers", numbers);
         model.put("persons", persons);
         model.put("types", types);
-    }
-
-    private Iterable<Reference> readAllReference(){
-
-        return referenceRepo.findAll();
     }
 
     private void addDefaultReferenceList(){
