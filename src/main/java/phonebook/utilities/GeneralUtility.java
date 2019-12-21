@@ -22,7 +22,6 @@ public class GeneralUtility {
     private final PhoneNumberRepository numberRepo;
     private final PhoneTypeRepository typeRepo;
     private ReferenceCreator refCreator;
-    private ArrayList<Reference> references;
 
     @Autowired
     public GeneralUtility(ReferenceRepository referenceRepo,
@@ -72,54 +71,51 @@ public class GeneralUtility {
         reference = refCreator.create(person, phoneNumber, phoneType);
 
         //add into DB
-        if (references == null){
-            references = (ArrayList<Reference>) readAllReference();
-        }
-        if (!references.contains(reference)){
-            referenceRepo.save(reference);
-        }
+        numberRepo.save(phoneNumber);
+        personRepo.save(person);
+        referenceRepo.save(reference);
     }
 
     public void search(String surname, String name, String number, Map<String,Object> model){
-
-        List<Reference> referenceList;
-
-        if (surname == null || surname.isEmpty()){
-            if (name == null || name.isEmpty()){
-                if (number == null || number.isEmpty()){
-                    referenceList = new ArrayList<>();
-                }
-                else {
-                    referenceList = referenceRepo.findByPhoneNumReference_PhoneNumber(number);
-                }
-            }
-            else if (number == null || number.isEmpty()){
-                referenceList = referenceRepo.findByPersReference_Name(name);
-            }
-            else {
-                referenceList = referenceRepo
-                        .findByPersReference_NameAndPhoneNumReference_PhoneNumber(name,number);
-            }
-        }
-        else if (name == null || name.isEmpty()){
-            if (number == null || number.isEmpty()){
-                referenceList = referenceRepo.findByPersReference_Surname(surname);
-            }
-            else {
-                referenceList = referenceRepo
-                        .findByPersReference_SurnameAndPhoneNumReference_PhoneNumber(surname,number);
-            }
-        }
-        else if (number == null || number.isEmpty()){
-            referenceList = referenceRepo.findByPersReference_SurnameAndPersReference_Name(surname, name);
-        }
-        else {
-            referenceList = referenceRepo
-                    .findByPersReference_SurnameAndPersReference_NameAndPhoneNumReference_PhoneNumber
-                            (surname, name, number);
-        }
-
-        read(referenceList, model);
+//
+//        List<Reference> referenceList;
+//
+//        if (surname == null || surname.isEmpty()){
+//            if (name == null || name.isEmpty()){
+//                if (number == null || number.isEmpty()){
+//                    referenceList = new ArrayList<>();
+//                }
+//                else {
+//                    referenceList = referenceRepo.findByPhoneNumReference_PhoneNumber(number);
+//                }
+//            }
+//            else if (number == null || number.isEmpty()){
+//                referenceList = referenceRepo.findByPersReference_Name(name);
+//            }
+//            else {
+//                referenceList = referenceRepo
+//                        .findByPersReference_NameAndPhoneNumReference_PhoneNumber(name,number);
+//            }
+//        }
+//        else if (name == null || name.isEmpty()){
+//            if (number == null || number.isEmpty()){
+//                referenceList = referenceRepo.findByPersReference_Surname(surname);
+//            }
+//            else {
+//                referenceList = referenceRepo
+//                        .findByPersReference_SurnameAndPhoneNumReference_PhoneNumber(surname,number);
+//            }
+//        }
+//        else if (number == null || number.isEmpty()){
+//            referenceList = referenceRepo.findByPersReference_SurnameAndPersReference_Name(surname, name);
+//        }
+//        else {
+//            referenceList = referenceRepo
+//                    .findByPersReference_SurnameAndPersReference_NameAndPhoneNumReference_PhoneNumber
+//                            (surname, name, number);
+//        }
+//
+//        read(referenceList, model);
     }
 
     public void update(String surname, String name, String family, String number, String type, Long id){
@@ -146,16 +142,32 @@ public class GeneralUtility {
 
         if (referenceRepo.findById(id).isPresent()){
             Reference reference = referenceRepo.findById(id).get();
+            Person person = reference.getPerson();
+            PhoneNumber number = reference.getNumber();
 
-            List<PhoneNumber> numbers = reference.getNumber().getPhoneType().getPhoneNumbers();
-            if (numbers != null && !numbers.isEmpty()){
-                numbers.remove(reference.getNumber());
+            referenceRepo.delete(reference);
+
+            number.getReferences().remove(reference);
+            if (number.getReferences().isEmpty()){
+                number.getPhoneType().getPhoneNumbers().remove(number);
+                numberRepo.delete(number);
             }
-            referenceRepo.deleteById(id);
+
+            person.getReferences().remove(reference);
+            if (person.getReferences().isEmpty()){
+                personRepo.delete(person);
+            }
         }
     }
 
-    public void read(Iterable<Reference> referenceList, Map<String,Object> model){
+    public void readAll(Map<String,Object> model){
+
+        ArrayList<Reference> references = (ArrayList<Reference>) readAllReference();
+
+        read(references, model);
+    }
+
+    private void read(Iterable<Reference> referenceList, Map<String,Object> model){
 
         ArrayList<Person> persons = new ArrayList<>();
         ArrayList<PhoneNumber> numbers = new ArrayList<>();
@@ -163,7 +175,7 @@ public class GeneralUtility {
 
 
         for (Reference element : referenceList){
-//            persons.add(element.getPersReference());
+            persons.add(element.getPerson());
             numbers.add(element.getNumber());
         }
         for (PhoneNumber element : numbers) {
@@ -174,13 +186,6 @@ public class GeneralUtility {
         model.put("numbers", numbers);
         model.put("persons", persons);
         model.put("types", types);
-    }
-
-    public void readAll(Map<String,Object> model){
-
-        references = (ArrayList<Reference>) readAllReference();
-
-        read(references, model);
     }
 
     private Iterable<Reference> readAllReference(){
@@ -198,6 +203,7 @@ public class GeneralUtility {
                                                                      defaultTypes.getDefaultTypeList());
         typeRepo.saveAll(defaultTypes.getDefaultTypeList());
         personRepo.saveAll(defaultPersons.getDefaultPersonList());
+        referenceRepo.saveAll(referenceList);
     }
 
     private PhoneType getPhoneType(String type, List<PhoneType> typeList){

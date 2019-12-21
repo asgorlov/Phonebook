@@ -19,7 +19,7 @@ public class Person {
     private String name;
     @Column
     private String family;
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "person")
     private List<Reference> references;
 
     public Person() {
