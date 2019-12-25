@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import phonebook.utilities.GeneralUtility;
+
 import java.util.Map;
 
 @Controller
@@ -59,17 +60,26 @@ public class RequestController {
             @RequestParam String number,
             @RequestParam String type,
             @RequestParam Long id,
-            Map<String,Object> model) {
+            Map<String, Object> model) {
 
         utility.update(surname, name, family, number, type, id);
         utility.readAll(model);
         return "main";
     }
 
+    @PostMapping("read")
+    public String read(
+            @RequestParam Long id,
+            Map<String, Object> model) {
+
+        utility.readById(id, model);
+        return "main";
+    }
+
     @PostMapping("delete")
     public String delete(
             @RequestParam Long id,
-            Map<String,Object> model) {
+            Map<String, Object> model) {
 
         utility.delete(id);
         utility.readAll(model);

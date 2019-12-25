@@ -10,6 +10,7 @@ import phonebook.repository.PersonRepository;
 import phonebook.repository.PhoneNumberRepository;
 import phonebook.repository.PhoneTypeRepository;
 import phonebook.repository.ReferenceRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,66 +41,69 @@ public class GeneralUtility {
 
     public void add(String surname, String name, String family, String number, String type){
 
-        Person person;
-        Reference reference;
-        PhoneNumber phoneNumber;
-        PhoneType phoneType;
+        if (isValidatePerson(surname, name, family) &&
+                isValidateNumber(number) &&
+                isValidateType(type)) {
 
-        //createType
-        phoneType = getPhoneType(type);
+            Person person;
+            Reference reference;
+            PhoneNumber phoneNumber;
+            PhoneType phoneType;
 
-        //check unique Reference
-        List<Reference> references = referenceRepo
-                .findByPerson_SurnameAndPerson_NameAndPerson_FamilyAndNumber_PhoneNumberAndNumber_PhoneType
-                        (surname,name,family,number,phoneType);
-        if (references.isEmpty()){
+            //createType
+            phoneType = getPhoneType(type);
 
-            //createNumber
-            List<PhoneNumber> numbers = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, phoneType.getType());
-            if (numbers.isEmpty()){
-                phoneNumber = new PhoneNumber(number);
+            //check unique Reference
+            List<Reference> references = referenceRepo
+                    .findByPerson_SurnameAndPerson_NameAndPerson_FamilyAndNumber_PhoneNumberAndNumber_PhoneType
+                            (surname, name, family, number, phoneType);
+            if (references.isEmpty()) {
+
+                //createNumber
+                List<PhoneNumber> numbers = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, phoneType.getType());
+                if (numbers.isEmpty()) {
+                    phoneNumber = new PhoneNumber(number);
+                } else {
+                    phoneNumber = numbers.get(0);
+                }
+
+                //create Person
+                List<Person> persons = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
+                if (persons.isEmpty()) {
+                    person = new Person(surname, name, family);
+                } else {
+                    person = persons.get(0);
+                }
+
+                //create Reference
+                reference = refCreator.create(person, phoneNumber, phoneType);
+
+                //add data into DB
+                numberRepo.save(phoneNumber);
+                personRepo.save(person);
+                referenceRepo.save(reference);
             }
-            else {
-                phoneNumber = numbers.get(0);
-            }
-
-            //create Person
-            List<Person> persons = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
-            if (persons.isEmpty()){
-                person = new Person(surname, name, family);
-            }
-            else {
-                person = persons.get(0);
-            }
-
-            //create Reference
-            reference = refCreator.create(person, phoneNumber, phoneType);
-
-            //add data into DB
-            numberRepo.save(phoneNumber);
-            personRepo.save(person);
-            referenceRepo.save(reference);
         }
     }
 
-    public void search(String surname, String name, String number, Map<String,Object> model){
+    public void search(String surname, String name, String number, Map<String,Object> model) {
 
         List<Reference> referenceList;
 
         //get event code
         StringBuilder eventCode = new StringBuilder();
-        getEventCode(eventCode,surname);
-        getEventCode(eventCode,name);
-        getEventCode(eventCode,number);
+        getEventCodeForPersonParams(eventCode, surname);
+        getEventCodeForPersonParams(eventCode, name);
+        getEventCodeForNumber(eventCode, number);
 
         //find case for event code
-        switch (eventCode.toString()){
-            case ("000") :
+        switch (eventCode.toString()) {
+            case ("000"):
                 referenceList = new ArrayList<>();
                 break;
-            case ("111") :
+            case ("111"):
                 referenceList = referenceRepo
-                                .findByPerson_SurnameAndPerson_NameAndNumber_PhoneNumber(surname, name, number);
+                        .findByPerson_SurnameAndPerson_NameAndNumber_PhoneNumber(surname, name, number);
                 break;
             case ("110") :
                 referenceList = referenceRepo.findByPerson_SurnameAndPerson_Name(surname,name);
@@ -123,7 +127,7 @@ public class GeneralUtility {
                 throw new IllegalStateException("Unexpected value: " + eventCode.toString());
         }
 
-        read(referenceList, model);
+        readReferenceList(referenceList, model);
     }
 
     public void update(String surname, String name, String family, String number, String type, Long id){
@@ -155,7 +159,9 @@ public class GeneralUtility {
 
             //check unique new phone
             List<PhoneNumber> numberList = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, type);
-            refNumber.setPhoneNumber(number);
+            if (numberList.isEmpty()) {
+                refNumber.setPhoneNumber(number);
+            }
         }
     }
 
@@ -176,27 +182,139 @@ public class GeneralUtility {
             }
 
             person.getReferences().remove(reference);
-            if (person.getReferences().isEmpty()){
+            if (person.getReferences().isEmpty()) {
                 personRepo.delete(person);
             }
         }
     }
 
-    public void readAll(Map<String,Object> model){
+    public void readById(Long id, Map<String, Object> model) {
 
-        List<Reference> refList = (List<Reference>) referenceRepo.findAll();;
+        if (referenceRepo.findById(id).isPresent()) {
+            Reference reference = referenceRepo.findById(id).get();
+            Person refPerson = reference.getPerson();
+            PhoneNumber refNumber = reference.getNumber();
+            PhoneType refType = refNumber.getPhoneType();
 
-        read(refList, model);
+            switch (refType.getType()) {
+                case "Сотовый":
+                    model.put("cell", "selected");
+                    break;
+                case "Рабочий":
+                    model.put("fix", "selected");
+                    break;
+                case "Домашний":
+                    model.put("home", "selected");
+                    break;
+            }
+
+            model.put("persSurname", refPerson.getSurname());
+            model.put("persName", refPerson.getName());
+            model.put("persFamily", refPerson.getFamily());
+            model.put("phoneNum", refNumber.getPhoneNumber());
+        }
     }
 
-    private void read(Iterable<Reference> referenceList, Map<String,Object> model){
+    public void readAll(Map<String, Object> model) {
+
+        List<Reference> refList = (List<Reference>) referenceRepo.findAll();
+
+        readReferenceList(refList, model);
+    }
+
+    private void addDefaultReferenceList() {
+
+        DefaultPersonList defaultPersons = new DefaultPersonList();
+        DefaultNumberList defaultNumbers = new DefaultNumberList();
+        DefaultTypeList defaultTypes = DefaultTypeList.getInstance();
+        List<Reference> referenceList = refCreator.createDefaultList(defaultPersons.getDefaultPersonList(),
+                defaultNumbers.getDefaultNumberList(),
+                defaultTypes.getDefaultTypeList());
+        typeRepo.saveAll(defaultTypes.getDefaultTypeList());
+        personRepo.saveAll(defaultPersons.getDefaultPersonList());
+        referenceRepo.saveAll(referenceList);
+    }
+
+    private boolean isValidateNumber(String number) {
+
+        //Validate phone number
+        if (number != null && number.length() == 16) {
+            return number.charAt(0) == '+' &&
+                    number.charAt(2) == '-' &&
+                    number.charAt(6) == '-' &&
+                    number.charAt(10) == '-' &&
+                    number.charAt(13) == '-';
+        } else {
+            return false;
+        }
+
+    }
+
+    private boolean isValidatePerson(String surname, String name, String family) {
+
+        //Validate parameters of person
+        if (surname == null || surname.length() < 2 || surname.length() > 40) {
+            return false;
+        }
+        if (name == null || name.length() < 2 || name.length() > 40) {
+            return false;
+        }
+        return family != null && family.length() >= 2 && family.length() <= 40;
+    }
+
+    private boolean isValidateType(String type) {
+
+        //Validate type of phone number
+        if (type == null || type.isEmpty()) {
+            return false;
+        } else return type.equals("0") || type.equals("1") || type.equals("2");
+
+    }
+
+    private void getEventCodeForPersonParams(StringBuilder eventCode, String parameter) {
+
+        if (parameter == null || parameter.length() < 2 || parameter.length() > 40) {
+            eventCode.append(0);
+        } else {
+            eventCode.append(1);
+        }
+    }
+
+    private void getEventCodeForNumber(StringBuilder eventCode, String number) {
+
+        if (isValidateNumber(number)) {
+            eventCode.append(1);
+        } else {
+            eventCode.append(0);
+        }
+    }
+
+    private PhoneType getPhoneType(String type) {
+
+        List<PhoneType> typeList = DefaultTypeList.getInstance().getDefaultTypeList();
+        PhoneType phoneType;
+
+        int typeIndex = 0;
+
+        try {
+            typeIndex = Integer.parseInt(type);
+        } catch (NumberFormatException nfe) {
+            nfe.printStackTrace();
+        } finally {
+            phoneType = typeList.get(typeIndex);
+        }
+
+        return phoneType;
+    }
+
+    private void readReferenceList(Iterable<Reference> referenceList, Map<String, Object> model) {
 
         ArrayList<Person> persons = new ArrayList<>();
         ArrayList<PhoneNumber> numbers = new ArrayList<>();
         ArrayList<PhoneType> types = new ArrayList<>();
 
 
-        for (Reference element : referenceList){
+        for (Reference element : referenceList) {
             persons.add(element.getPerson());
             numbers.add(element.getNumber());
         }
@@ -208,45 +326,5 @@ public class GeneralUtility {
         model.put("numbers", numbers);
         model.put("persons", persons);
         model.put("types", types);
-    }
-
-    private void addDefaultReferenceList(){
-
-        DefaultPersonList defaultPersons = new DefaultPersonList();
-        DefaultNumberList defaultNumbers = new DefaultNumberList();
-        DefaultTypeList defaultTypes = DefaultTypeList.getInstance();
-        List<Reference> referenceList = refCreator.createDefaultList(defaultPersons.getDefaultPersonList(),
-                                                                     defaultNumbers.getDefaultNumberList(),
-                                                                     defaultTypes.getDefaultTypeList());
-        typeRepo.saveAll(defaultTypes.getDefaultTypeList());
-        personRepo.saveAll(defaultPersons.getDefaultPersonList());
-        referenceRepo.saveAll(referenceList);
-    }
-
-    private PhoneType getPhoneType(String type){
-
-        List<PhoneType> typeList = DefaultTypeList.getInstance().getDefaultTypeList();
-        PhoneType phoneType;
-
-        int typeIndex = 0;
-
-        try {
-            typeIndex = Integer.parseInt(type);
-        }catch(NumberFormatException nfe) {
-            nfe.printStackTrace();
-        }finally {
-            phoneType = typeList.get(typeIndex);
-        }
-
-        return phoneType;
-    }
-
-    private void getEventCode(StringBuilder eventCode, String attribute){
-
-        if (attribute == null || attribute.isEmpty()){
-            eventCode.append(0);
-        }else {
-            eventCode.append(1);
-        }
     }
 }

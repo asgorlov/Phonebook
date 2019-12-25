@@ -177,7 +177,6 @@
                 <table>
                     <tr>
                         <td height = "30" style="vertical-align: baseline">
-                            <b>{{id}}</b>
                             <span>{{surname}}</span>
                             <span>{{name}}</span>
                             <span>{{family}}</span>
@@ -214,8 +213,11 @@
             {{#references}}
                 <table>
                     <tr>
-                        <td height = "30" style="vertical-align: baseline">
-                            <a href="#zatemnenie3"><button>Изменить</button></a>
+                        <td height="30" style="vertical-align: baseline">
+                            <form method="post" id="reading" action="read"></form>
+                            <a href="#zatemnenie3">
+                                <button form="reading" name="id" value={{id}}>Изменить</button>
+                            </a>
                             <div id="zatemnenie3">
                                 <div id="okno3">
                                     <div>
@@ -224,26 +226,31 @@
                                             <table>
                                                 <tr>
                                                     <td>Фамилия</td>
-                                                    <td> <input type="text" name="surname" placeholder="" minlength="2" maxlength="40" required></td>
+                                                    <td><input type="text" name="surname" placeholder="" minlength="2"
+                                                               maxlength="40" required></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Имя</td>
-                                                    <td><input type="text" name="name" placeholder="" minlength="2" maxlength="40" required></td>
+                                                    <td><input type="text" name="name" placeholder="" minlength="2"
+                                                               maxlength="40" required></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Отчество</td>
-                                                    <td><input type="text" name="family" placeholder="" minlength="2" maxlength="40" required></td>
+                                                    <td><input type="text" name="family" placeholder="" minlength="2"
+                                                               maxlength="40" required></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Телефон</td>
                                                     <td><input type="tel" name="number" placeholder="+Х-ХХХ-ХХХ-ХХ-ХХ"
                                                                pattern="[\+]\d[\-]\d{3}[\-]\d{3}[\-]\d{2}[\-]\d{2}"
-                                                               minlength="16" maxlength="18" required></td>
+                                                               required></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Тип номера</td>
                                                     <td><select name="type" required>
-                                                        <option selected disabled style="display:none">Выберете тип номера</option>
+                                                        <option selected disabled style="display:none">Выберете тип
+                                                            номера
+                                                        </option>
                                                         <option value="0">Сотовый</option>
                                                         <option value="1">Рабочий</option>
                                                         <option value="2">Домашний</option>
