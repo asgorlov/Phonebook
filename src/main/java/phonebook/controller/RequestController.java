@@ -67,15 +67,6 @@ public class RequestController {
         return "main";
     }
 
-    @PostMapping("read")
-    public String read(
-            @RequestParam Long id,
-            Map<String, Object> model) {
-
-        utility.readById(id, model);
-        return "main";
-    }
-
     @PostMapping("delete")
     public String delete(
             @RequestParam Long id,

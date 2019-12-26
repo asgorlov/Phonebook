@@ -1,7 +1,20 @@
 <html lang="RU">
 <head>
     <style>
-        select {width: 180px;}
+        select {
+            width: 180px;
+        }
+
+        body {
+            counter-reset: heading; /* Инициируем счетчик */
+        }
+
+        h2:before {
+            counter-increment: heading; /* Указываем идентификатор счетчика */
+            content: counter(heading) ". "; /* Выводим текст перед содержимым тега <h2> */
+            font-weight: normal;
+            font-size: 16px;
+        }
 
         #zatemnenie {
             background: rgba(102, 102, 102, 0.5);
@@ -90,15 +103,34 @@
             text-decoration: none;
             background: #f2f2f2;
             font-size: 12pt;
-            cursor:pointer;
+            cursor: pointer;
         }
-        .close:hover {background: #e6e6ff;}
 
+        .close:hover {
+            background: #e6e6ff;
+        }
     </style>
+
+    <script>
+        function handleButtonClick(value) {
+            let reference = document.getElementById(value);
+            let persSurname = document.getElementById(value).getElementsByClassName('persSurname')[0];
+            // let persName = reference.getElementsByClassName('persName')[0].innerText;
+            // let persFamily = reference.getElementsByClassName('persFamily')[0].innerText;
+            // let phoneNum = reference.getElementsByClassName('phoneNum')[0].innerText;
+            // let numberType = reference.getElementsByClassName('numberType')[0].innerText;
+
+            alert(reference.toString());
+            alert(persSurname.toString());
+        }
+    </script>
+
 </head>
 <body>
 
-<a href="#zatemnenie"><button><b>Добавить контакт</b></button></a>
+<a href="#zatemnenie">
+    <button><b>Добавить контакт</b></button>
+</a>
 <div id="zatemnenie">
     <div id="okno">
         <div>
@@ -169,111 +201,89 @@
     </div>
 </div>
 <p></p>
+
 <div><b>Список контактов</b></div>
 <table>
-    <tr>
-        <td style="vertical-align: baseline">
-            {{#persons}}
-                <table>
-                    <tr>
-                        <td height = "30" style="vertical-align: baseline">
-                            <span>{{surname}}</span>
-                            <span>{{name}}</span>
-                            <span>{{family}}</span>
-                        </td>
-                    </tr>
-                </table>
-            {{/persons}}
+    {{#references}}
+        <tr>
+            <td style="vertical-align: baseline">
+                <h2></h2>
+            </td>
 
-        <td style="vertical-align: baseline">
-            {{#numbers}}
-                <table>
-                    <tr>
-                        <td height = "30" style="vertical-align: baseline">
-                            <span>{{phoneNumber}}</span>
-                        </td>
-                    </tr>
-                </table>
-            {{/numbers}}
-        </td>
+            <div id={{id}}>
+                <td style="vertical-align: baseline">
+                    <span class="persSurname">{{person.surname}}</span>
+                    <span class="persName">{{person.name}}</span>
+                    <span class="persFamily">{{person.family}}</span>
+                </td>
 
-        <td style="vertical-align: baseline">
-            {{#types}}
-                <table>
-                    <tr>
-                        <td height = "30" style="vertical-align: baseline">
-                            <span>{{type}}</span>
-                        </td>
-                    </tr>
-                </table>
-            {{/types}}
-        </td>
+                <td style="vertical-align: baseline">
+                    <span class="phoneNum">{{number.phoneNumber}}</span>
+                </td>
 
-        <td style="vertical-align: baseline">
-            {{#references}}
-                <table>
-                    <tr>
-                        <td height="30" style="vertical-align: baseline">
-                            <form method="post" id="reading" action="read"></form>
-                            <a href="#zatemnenie3">
-                                <button form="reading" name="id" value={{id}}>Изменить</button>
-                            </a>
-                            <div id="zatemnenie3">
-                                <div id="okno3">
-                                    <div>
-                                        <div><b>Изменить контакт</b></div>
-                                        <form method="post" action="update">
-                                            <table>
-                                                <tr>
-                                                    <td>Фамилия</td>
-                                                    <td><input type="text" name="surname" placeholder="" minlength="2"
-                                                               maxlength="40" required></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Имя</td>
-                                                    <td><input type="text" name="name" placeholder="" minlength="2"
-                                                               maxlength="40" required></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Отчество</td>
-                                                    <td><input type="text" name="family" placeholder="" minlength="2"
-                                                               maxlength="40" required></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Телефон</td>
-                                                    <td><input type="tel" name="number" placeholder="+Х-ХХХ-ХХХ-ХХ-ХХ"
-                                                               pattern="[\+]\d[\-]\d{3}[\-]\d{3}[\-]\d{2}[\-]\d{2}"
-                                                               required></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Тип номера</td>
-                                                    <td><select name="type" required>
-                                                        <option selected disabled style="display:none">Выберете тип
-                                                            номера
-                                                        </option>
-                                                        <option value="0">Сотовый</option>
-                                                        <option value="1">Рабочий</option>
-                                                        <option value="2">Домашний</option>
-                                                    </select></td>
-                                                </tr>
-                                            </table>
-                                            <button type="submit">Изменить</button>
-                                        </form>
-                                    </div>
-                                    <a href="#" class="close">Закрыть окно</a>
-                                </div>
-                            </div>
-                        </td>
-                        <form method="post" action="delete">
-                            <td height = "30" style="vertical-align: baseline">
-                                <button type="submit" name = "id" value={{id}}>Удалить</button>
-                            </td>
-                        </form>
-                    </tr>
-                </table>
-            {{/references}}
-        </td>
-    </tr>
+                <td style="vertical-align: baseline">
+                    <span class="numberType">{{number.phoneType.type}}</span>
+                </td>
+            </div>
+
+            <td style="vertical-align: baseline">
+                <a href="#zatemnenie3">
+                    <button onclick="handleButtonClick({{id}})">Изменить</button>
+                </a>
+                <div id="zatemnenie3">
+                    <div id="okno3">
+                        <div>
+                            <div><b>Изменить контакт</b></div>
+                            <form method="post" action="update">
+                                <table>
+                                    <tr>
+                                        <td>Фамилия</td>
+                                        <td><input type="text" name="surname" id="persSurname"
+                                                   minlength="2" maxlength="40" required></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Имя</td>
+                                        <td><input type="text" name="name" id="persName"
+                                                   minlength="2" maxlength="40" required></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Отчество</td>
+                                        <td><input type="text" name="family" id="persFamily"
+                                                   minlength="2" maxlength="40" required></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Телефон</td>
+                                        <td><input type="tel" name="number" placeholder="+Х-ХХХ-ХХХ-ХХ-ХХ"
+                                                   pattern="[\+]\d[\-]\d{3}[\-]\d{3}[\-]\d{2}[\-]\d{2}"
+                                                   required id="phoneNumber"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Тип номера</td>
+                                        <td>
+                                            <select name="type" required>
+                                                <option value="0">Сотовый</option>
+                                                <option value="1">Рабочий</option>
+                                                <option value="2">Домашний</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <button type="submit">Изменить</button>
+                            </form>
+                        </div>
+                        <a href="#" class="close">Закрыть окно</a>
+                    </div>
+                </div>
+            </td>
+
+            <td style="vertical-align: baseline">
+                <form method="post" action="delete">
+                    <button type="submit" name="id" value={{id}}>Удалить</button>
+                </form>
+            </td>
+        </tr>
+    {{/references}}
 </table>
+
 </body>
 </html>

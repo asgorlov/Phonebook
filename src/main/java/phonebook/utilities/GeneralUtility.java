@@ -51,7 +51,7 @@ public class GeneralUtility {
             PhoneType phoneType;
 
             //createType
-            phoneType = getPhoneType(type);
+            phoneType = getType(type);
 
             //check unique Reference
             List<Reference> references = referenceRepo
@@ -127,7 +127,7 @@ public class GeneralUtility {
                 throw new IllegalStateException("Unexpected value: " + eventCode.toString());
         }
 
-        readReferenceList(referenceList, model);
+        model.put("references", referenceList);
     }
 
     public void update(String surname, String name, String family, String number, String type, Long id){
@@ -188,38 +188,11 @@ public class GeneralUtility {
         }
     }
 
-    public void readById(Long id, Map<String, Object> model) {
-
-        if (referenceRepo.findById(id).isPresent()) {
-            Reference reference = referenceRepo.findById(id).get();
-            Person refPerson = reference.getPerson();
-            PhoneNumber refNumber = reference.getNumber();
-            PhoneType refType = refNumber.getPhoneType();
-
-            switch (refType.getType()) {
-                case "Сотовый":
-                    model.put("cell", "selected");
-                    break;
-                case "Рабочий":
-                    model.put("fix", "selected");
-                    break;
-                case "Домашний":
-                    model.put("home", "selected");
-                    break;
-            }
-
-            model.put("persSurname", refPerson.getSurname());
-            model.put("persName", refPerson.getName());
-            model.put("persFamily", refPerson.getFamily());
-            model.put("phoneNum", refNumber.getPhoneNumber());
-        }
-    }
-
     public void readAll(Map<String, Object> model) {
 
         List<Reference> refList = (List<Reference>) referenceRepo.findAll();
 
-        readReferenceList(refList, model);
+        model.put("references", refList);
     }
 
     private void addDefaultReferenceList() {
@@ -289,7 +262,7 @@ public class GeneralUtility {
         }
     }
 
-    private PhoneType getPhoneType(String type) {
+    private PhoneType getType(String type) {
 
         List<PhoneType> typeList = DefaultTypeList.getInstance().getDefaultTypeList();
         PhoneType phoneType;
@@ -305,26 +278,5 @@ public class GeneralUtility {
         }
 
         return phoneType;
-    }
-
-    private void readReferenceList(Iterable<Reference> referenceList, Map<String, Object> model) {
-
-        ArrayList<Person> persons = new ArrayList<>();
-        ArrayList<PhoneNumber> numbers = new ArrayList<>();
-        ArrayList<PhoneType> types = new ArrayList<>();
-
-
-        for (Reference element : referenceList) {
-            persons.add(element.getPerson());
-            numbers.add(element.getNumber());
-        }
-        for (PhoneNumber element : numbers) {
-            types.add(element.getPhoneType());
-        }
-
-        model.put("references", referenceList);
-        model.put("numbers", numbers);
-        model.put("persons", persons);
-        model.put("types", types);
     }
 }
