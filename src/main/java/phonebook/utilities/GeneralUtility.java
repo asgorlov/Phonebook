@@ -51,7 +51,7 @@ public class GeneralUtility {
             PhoneType phoneType;
 
             //createType
-            phoneType = getType(type);
+            phoneType = getPhoneType(type);
 
             //check unique Reference
             List<Reference> references = referenceRepo
@@ -130,37 +130,57 @@ public class GeneralUtility {
         model.put("references", referenceList);
     }
 
-    public void update(String surname, String name, String family, String number, String type, Long id){
+    public void update(String surname, String name, String family, String number, String type, Long id) {
 
-        if (referenceRepo.findById(id).isPresent()){
-            Reference reference = referenceRepo.findById(id).get();
-            Person refPerson = reference.getPerson();
-            PhoneNumber refNumber = reference.getNumber();
-            PhoneType refType = refNumber.getPhoneType();
+        if (isValidatePerson(surname, name, family) &&
+                isValidateNumber(number) &&
+                isValidateType(type)) {
 
-            //check unique new person
-            List<Person> personList = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
-            if (personList.isEmpty()){
-                refPerson.setSurname(surname);
-                refPerson.setName(name);
-                refPerson.setFamily(family);
-            }
-            //merge references new person & old person
-            else if (!personList.get(0).getId().equals(refPerson.getId())){
-                for (Reference element : personList.get(0).getReferences()){
-                    if (!refPerson.getReferences().contains(element)){
-                        refPerson.getReferences().add(element);
-                        element.setPerson(refPerson);
-                    }
+            if (referenceRepo.findById(id).isPresent()) {
+                Reference reference = referenceRepo.findById(id).get();
+
+                //check unique new person
+                Person refPerson = reference.getPerson();
+                List<Person> personList = personRepo.findBySurnameAndNameAndFamily(surname, name, family);
+                if (personList.isEmpty()) {
+                    refPerson.setSurname(surname);
+                    refPerson.setName(name);
+                    refPerson.setFamily(family);
                 }
-                personList.get(0).setReferences(null);
-                personRepo.deleteById(personList.get(0).getId());
-            }
+                //merge references new person & old person
+                else if (!personList.get(0).getId().equals(refPerson.getId())) {
+                    for (Reference element : personList.get(0).getReferences()) {
+                        if (!refPerson.getReferences().contains(element)) {
+                            refPerson.getReferences().add(element);
+                            element.setPerson(refPerson);
+                        }
+                    }
+                    personList.get(0).setReferences(null);
+                    personRepo.deleteById(personList.get(0).getId());
+                }
 
-            //check unique new phone
-            List<PhoneNumber> numberList = numberRepo.findByPhoneNumberAndAndPhoneType_Type(number, type);
-            if (numberList.isEmpty()) {
-                refNumber.setPhoneNumber(number);
+                //check unique new phone
+                PhoneNumber refNumber = reference.getNumber();
+                PhoneType newType = getPhoneType(type);
+                List<PhoneNumber> numberList = numberRepo
+                        .findByPhoneNumberAndAndPhoneType_Type(number, newType.getType());
+                if (numberList.isEmpty()) {
+                    refNumber.setPhoneNumber(number);
+                    refNumber.setPhoneType(newType);
+                }
+                //merge references new number & old number
+                else if (!numberList.get(0).getId().equals(refNumber.getId())) {
+                    for (Reference element : numberList.get(0).getReferences()) {
+                        if (!refNumber.getReferences().contains(element)) {
+                            refNumber.getReferences().add(element);
+                            element.setNumber(refNumber);
+                        }
+                    }
+                    numberList.get(0).setReferences(null);
+                    numberRepo.deleteById(numberList.get(0).getId());
+                }
+
+                referenceRepo.save(reference);
             }
         }
     }
@@ -262,7 +282,7 @@ public class GeneralUtility {
         }
     }
 
-    private PhoneType getType(String type) {
+    private PhoneType getPhoneType(String type) {
 
         List<PhoneType> typeList = DefaultTypeList.getInstance().getDefaultTypeList();
         PhoneType phoneType;
