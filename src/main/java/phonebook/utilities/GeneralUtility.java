@@ -11,9 +11,7 @@ import phonebook.repository.PhoneNumberRepository;
 import phonebook.repository.PhoneTypeRepository;
 import phonebook.repository.ReferenceRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class GeneralUtility {
@@ -128,6 +126,7 @@ public class GeneralUtility {
         }
 
         model.put("references", referenceList);
+        model.put("listName", "Список найденный контактов");
     }
 
     public void update(String surname, String name, String family, String number, String type, Long id) {
@@ -156,6 +155,9 @@ public class GeneralUtility {
                         }
                     }
                     personList.get(0).setReferences(null);
+                    refPerson.setSurname(surname);
+                    refPerson.setName(name);
+                    refPerson.setFamily(family);
                     personRepo.deleteById(personList.get(0).getId());
                 }
 
@@ -177,6 +179,8 @@ public class GeneralUtility {
                         }
                     }
                     numberList.get(0).setReferences(null);
+                    refNumber.setPhoneNumber(number);
+                    refNumber.setPhoneType(newType);
                     numberRepo.deleteById(numberList.get(0).getId());
                 }
 
@@ -213,6 +217,7 @@ public class GeneralUtility {
         List<Reference> refList = (List<Reference>) referenceRepo.findAll();
 
         model.put("references", refList);
+        model.put("listName","Список контактов");
     }
 
     private void addDefaultReferenceList() {

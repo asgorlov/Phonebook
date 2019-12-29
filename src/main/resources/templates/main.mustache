@@ -123,6 +123,7 @@
             document.getElementById('inputName').value = persName;
             document.getElementById('inputFamily').value = persFamily;
             document.getElementById('inputNumber').value = phoneNum;
+            document.getElementById('editButton').value = idElement;
 
             if (numberType === 'Сотовый') {
                 document.getElementById('cell').selected = 'selected';
@@ -135,82 +136,92 @@
     </script>
 </head>
 <body>
-
-<a href="#zatemnenie">
-    <button><b>Добавить контакт</b></button>
-</a>
-<div id="zatemnenie">
-    <div id="okno">
-        <div>
-            <div><b>Добавить контакт</b></div>
-            <form method="post" action="add">
-                <table>
-                    <tr>
-                        <td>Фамилия<span style="color: red; ">*</span></td>
-                        <td><input type="text" name="surname" minlength="2" maxlength="40" required></td>
-                    </tr>
-                    <tr>
-                        <td>Имя<span style="color: red; ">*</span></td>
-                        <td><input type="text" name="name" minlength="2" maxlength="40" required></td>
-                    </tr>
-                    <tr>
-                        <td>Отчество</td>
-                        <td><input type="text" name="family" minlength="2" maxlength="40"></td>
-                    </tr>
-                    <tr>
-                        <td>Телефон<span style="color: red; ">*</span></td>
-                        <td><input type="tel" name="number" placeholder="+Х-ХХХ-ХХХ-ХХ-ХХ"
-                                   pattern="[\+]\d[\-]\d{3}[\-]\d{3}[\-]\d{2}[\-]\d{2}"
-                                   minlength="16" maxlength="18" required></td>
-                    </tr>
-                    <tr>
-                        <td>Тип номера<span style="color: red; ">*</span></td>
-                        <td><select name="type" required>
-                            <option selected disabled style="display:none">Выберете тип номера</option>
-                            <option value="0">Сотовый</option>
-                            <option value="1">Рабочий</option>
-                            <option value="2">Домашний</option>
-                        </select></td>
-                    </tr>
-                </table>
-                <button type="submit">Добавить</button>
+<table>
+    <tr>
+        <td style="vertical-align: baseline">
+            <form method="get" action="/">
+                <button><b>Обновить список</b></button>
             </form>
-        </div>
-        <a href="#" class="close">Закрыть окно</a>
-    </div>
-</div>
+        </td>
+        <td style="vertical-align: baseline">
+            <a href="#zatemnenie">
+                <button><b>Добавить контакт</b></button>
+            </a>
+            <div id="zatemnenie">
+                <div id="okno">
+                    <div>
+                        <div><b>Добавить контакт</b></div>
+                        <form method="post" action="add">
+                            <table>
+                                <tr>
+                                    <td>Фамилия<span style="color: red; ">*</span></td>
+                                    <td><input type="text" name="surname" minlength="2" maxlength="40" required></td>
+                                </tr>
+                                <tr>
+                                    <td>Имя<span style="color: red; ">*</span></td>
+                                    <td><input type="text" name="name" minlength="2" maxlength="40" required></td>
+                                </tr>
+                                <tr>
+                                    <td>Отчество</td>
+                                    <td><input type="text" name="family" minlength="2" maxlength="40"></td>
+                                </tr>
+                                <tr>
+                                    <td>Телефон<span style="color: red; ">*</span></td>
+                                    <td><input type="tel" name="number" placeholder="+Х-ХХХ-ХХХ-ХХ-ХХ"
+                                               pattern="[\+]\d[\-]\d{3}[\-]\d{3}[\-]\d{2}[\-]\d{2}"
+                                               minlength="16" maxlength="18" required></td>
+                                </tr>
+                                <tr>
+                                    <td>Тип номера<span style="color: red; ">*</span></td>
+                                    <td><select name="type" required>
+                                        <option selected disabled style="display:none">Выберете тип номера</option>
+                                        <option value="0">Сотовый</option>
+                                        <option value="1">Рабочий</option>
+                                        <option value="2">Домашний</option>
+                                    </select></td>
+                                </tr>
+                            </table>
+                            <button type="submit">Добавить</button>
+                        </form>
+                    </div>
+                    <a href="#" class="close">Закрыть окно</a>
+                </div>
+            </div>
+        </td>
+        <td style="vertical-align: baseline">
+            <a href="#zatemnenie2"><button><b>Найти контакт</b></button></a>
+            <div id="zatemnenie2">
+                <div id="okno2">
+                    <div>
+                        <div><b>Найти контакт</b></div>
+                        <form method="post" action="search">
+                            <table>
+                                <tr>
+                                    <td>Фамилия</td>
+                                    <td> <input type="text" name="surname" minlength="2" maxlength="40"></td>
+                                </tr>
+                                <tr>
+                                    <td>Имя</td>
+                                    <td><input type="text" name="name" minlength="2" maxlength="40"></td>
+                                </tr>
+                                <tr>
+                                    <td>Телефон</td>
+                                    <td><input type="tel" name="number" placeholder="+Х-ХХХ-ХХХ-ХХ-ХХ"
+                                               pattern="[\+]\d[\-]\d{3}[\-]\d{3}[\-]\d{2}[\-]\d{2}" minlength="16" maxlength="18"></td>
+                                </tr>
+                                <tr>
+                            </table>
+                            <button type="submit">Найти</button>
+                        </form>
+                    </div>
+                    <a href="#" class="close">Закрыть окно</a>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
 
-<a href="#zatemnenie2"><button><b>Найти контакт</b></button></a>
-<div id="zatemnenie2">
-    <div id="okno2">
-        <div>
-            <div><b>Найти контакт</b></div>
-            <form method="post" action="search">
-                <table>
-                    <tr>
-                        <td>Фамилия</td>
-                        <td> <input type="text" name="surname" minlength="2" maxlength="40"></td>
-                    </tr>
-                    <tr>
-                        <td>Имя</td>
-                        <td><input type="text" name="name" minlength="2" maxlength="40"></td>
-                    </tr>
-                    <tr>
-                        <td>Телефон</td>
-                        <td><input type="tel" name="number" placeholder="+Х-ХХХ-ХХХ-ХХ-ХХ"
-                                   pattern="[\+]\d[\-]\d{3}[\-]\d{3}[\-]\d{2}[\-]\d{2}" minlength="16" maxlength="18"></td>
-                    </tr>
-                    <tr>
-                </table>
-                <button type="submit">Найти</button>
-            </form>
-        </div>
-        <a href="#" class="close">Закрыть окно</a>
-    </div>
-</div>
-<p></p>
-
-<div><b>Список контактов</b></div>
+<div><b>{{listName}}</b></div>
 <table>
     {{#references}}
         <tr>
@@ -274,7 +285,7 @@
                                         </td>
                                     </tr>
                                 </table>
-                                <button type="submit">Изменить</button>
+                                <button type="submit" id="editButton" name="id">Изменить</button>
                             </form>
                         </div>
                         <a href="#" class="close">Закрыть окно</a>

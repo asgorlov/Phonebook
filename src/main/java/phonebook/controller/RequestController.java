@@ -37,8 +37,7 @@ public class RequestController {
             Map<String,Object> model) {
 
         utility.add(surname, name, family, number, type);
-        utility.readAll(model);
-        return "main";
+        return readAll(model);
     }
 
     @PostMapping("search")
@@ -63,8 +62,7 @@ public class RequestController {
             Map<String, Object> model) {
 
         utility.update(surname, name, family, number, type, id);
-        utility.readAll(model);
-        return "main";
+        return readAll(model);
     }
 
     @PostMapping("delete")
@@ -73,7 +71,6 @@ public class RequestController {
             Map<String, Object> model) {
 
         utility.delete(id);
-        utility.readAll(model);
-        return "main";
+        return readAll(model);
     }
 }
